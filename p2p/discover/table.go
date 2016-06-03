@@ -226,6 +226,14 @@ func (tab *Table) Resolve(targetID NodeID) *Node {
 	return nil
 }
 
+// RandomLookup performs a network search for nodes close
+// to a random given target. using Lookup
+func (tab *Table) RandomLookup() []*Node {
+	var target NodeID
+	rand.Read(target[:])
+	return tab.lookup(target, false)
+}
+
 // Lookup performs a network search for nodes close
 // to the given target. It approaches the target by querying
 // nodes that are closer to it on each iteration.

@@ -61,6 +61,7 @@ type discoverTable interface {
 	Self() *discover.Node
 	Close()
 	Resolve(target discover.NodeID) *discover.Node
+	RandomLookup() []*discover.Node
 	Lookup(target discover.NodeID) []*discover.Node
 	ReadRandomNodes([]*discover.Node) int
 }

@@ -187,6 +187,10 @@ web3._extend({
 			params: 1
 		}),
 		new web3._extend.Method({
+			name: 'findMorePeers',
+			call: 'admin_findMorePeers'
+		}),
+		new web3._extend.Method({
 			name: 'exportChain',
 			call: 'admin_exportChain',
 			params: 1,
@@ -583,8 +587,8 @@ web3._extend({
 			params: 2
 		}),
 		new web3._extend.Method({
-			name: 'sendTransaction',
-			call: 'personal_sendTransaction',
+			name: 'signAndSendTransaction',
+			call: 'personal_signAndSendTransaction',
 			params: 2,
 			inputFormatter: [web3._extend.formatters.inputTransactionFormatter, null]
 		}),

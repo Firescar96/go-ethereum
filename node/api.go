@@ -74,6 +74,20 @@ func (api *PrivateAdminAPI) RemovePeer(url string) (bool, error) {
 	return true, nil
 }
 
+// FindMorePeers runs another round of peer discovery to find and
+// connect to more peers. This may exceed the MaxPeers limit.
+func (api *PrivateAdminAPI) FindMorePeers() ([]*discover.Node, error) {
+	// Make sure the server is running, fail otherwise
+	server := api.node.Server()
+	if server == nil {
+		return nil, ErrNodeStopped
+	}
+
+	result := server.FindMorePeers()
+
+	return result, nil
+}
+
 // StartRPC starts the HTTP RPC API server.
 func (api *PrivateAdminAPI) StartRPC(host *string, port *rpc.HexNumber, cors *string, apis *string) (bool, error) {
 	api.node.lock.Lock()

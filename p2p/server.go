@@ -280,6 +280,15 @@ func (srv *Server) RemovePeer(node *discover.Node) {
 	}
 }
 
+// FindMorePeers tries to find and add more peers
+func (srv *Server) FindMorePeers() []*discover.Node {
+
+	//get a random id to seed the Lookup
+	result := srv.ntab.RandomLookup()
+
+	return result
+}
+
 // Self returns the local node's endpoint information.
 func (srv *Server) Self() *discover.Node {
 	srv.lock.Lock()
@@ -350,7 +359,6 @@ func (srv *Server) Start() (err error) {
 	srv.delpeer = make(chan *Peer)
 	srv.posthandshake = make(chan *conn)
 	srv.addstatic = make(chan *discover.Node)
-	srv.removestatic = make(chan *discover.Node)
 	srv.peerOp = make(chan peerOpFunc)
 	srv.peerOpDone = make(chan struct{})
 
@@ -430,7 +438,6 @@ type dialer interface {
 	newTasks(running int, peers map[discover.NodeID]*Peer, now time.Time) []task
 	taskDone(task, time.Time)
 	addStatic(*discover.Node)
-	removeStatic(*discover.Node)
 }
 
 func (srv *Server) run(dialstate dialer) {
@@ -494,15 +501,6 @@ running:
 			// it will keep the node connected.
 			glog.V(logger.Detail).Infoln("<-addstatic:", n)
 			dialstate.addStatic(n)
-		case n := <-srv.removestatic:
-			// This channel is used by RemovePeer to send a
-			// disconnect request to a peer and begin the
-			// stop keeping the node connected
-			glog.V(logger.Detail).Infoln("<-removestatic:", n)
-			dialstate.removeStatic(n)
-			if p, ok := peers[n.ID]; ok {
-				p.Disconnect(DiscRequested)
-			}
 		case op := <-srv.peerOp:
 			// This channel is used by Peers and PeerCount.
 			op(peers)
