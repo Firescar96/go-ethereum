@@ -518,6 +518,12 @@ type buffer struct {
 
 var logging loggingT
 
+func getLogger() loggingT {
+	logging.mu.Lock()
+	defer logging.mu.Unlock()
+	return logging
+}
+
 // setVState sets a consistent state for V logging.
 // l.mu is held.
 func (l *loggingT) setVState(verbosity Level, filter []modulePat, setFilter bool) {
