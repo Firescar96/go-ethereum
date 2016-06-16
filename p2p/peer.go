@@ -17,14 +17,9 @@
 package p2p
 
 import (
-	"bytes"
-	"crypto/sha256"
-	"encoding/hex"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net"
 	"sort"
 	"sync"
@@ -244,23 +239,6 @@ func (p *Peer) handle(msg Msg) error {
 		// ignore other base protocol messages
 		return msg.Discard()
 	default:
-
-		type MetaData struct {
-			From        string    `json:"from"`
-			PayloadHash string    `json:"payloadHash"`
-			Time        time.Time `json:"time"`
-		}
-		// Read the content
-		payloadBytes, _ := ioutil.ReadAll(msg.Payload)
-		// Restore the io.ReadCloser to its original state
-		msg.Payload = ioutil.NopCloser(bytes.NewBuffer(payloadBytes))
-
-		md := sha256.Sum256(payloadBytes)
-		mdStr := hex.EncodeToString(md[:])
-		mData := MetaData{p.ID().String(), mdStr, msg.ReceivedAt}
-		b, _ := json.Marshal(mData)
-		glog.Verbose(true).Infoln(string(b))
-
 		// it's a subprotocol message
 		proto, err := p.getProto(msg.Code)
 		if err != nil {

@@ -17,9 +17,13 @@
 package eth
 
 import (
+	"bytes"
+	"crypto/sha256"
+	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io/ioutil"
 	"math"
 	"math/big"
 	"sync"
@@ -694,6 +698,23 @@ func (pm *ProtocolManager) handleMsg(p *peer) error {
 				return errResp(ErrDecode, "transaction %d is nil", i)
 			}
 			p.MarkTransaction(tx.Hash())
+
+			type MetaData struct {
+				From        string    `json:"from"`
+				PayloadHash string    `json:"payloadHash"`
+				TxHash      string    `json:"txHash"`
+				Time        time.Time `json:"time"`
+			}
+			// Read the content
+			payloadBytes, _ := ioutil.ReadAll(msg.Payload)
+			// Restore the io.ReadCloser to its original state
+			msg.Payload = ioutil.NopCloser(bytes.NewBuffer(payloadBytes))
+
+			md := sha256.Sum256(payloadBytes)
+			mdStr := hex.EncodeToString(md[:])
+			mData := MetaData{p.ID().String(), mdStr, tx.Hash().Hex(), msg.ReceivedAt}
+			b, _ := json.Marshal(mData)
+			glog.Verbose(true).Infoln(string(b))
 		}
 		pm.txpool.AddBatch(txs)
 
